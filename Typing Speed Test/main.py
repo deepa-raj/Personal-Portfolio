@@ -1,96 +1,131 @@
 from tkinter import *
-from tkinter import filedialog, messagebox
+import random
+import time
 
-from PIL import Image, ImageTk, ImageDraw, ImageFont
+
+sentences = [
+    "The quick brown fox jumps over the lazy dog.",
+    "Python is a great programming language.",
+    "Flask makes web development easy and fun.",
+    "Practice makes perfect.",
+    "OpenAI creates advanced AI models.",
+    "Typing speed tests are a great way to improve your typing skills.",
+    "Consistent practice can significantly increase your typing speed.",
+    "Accuracy is just as important as speed when typing.",
+    "Remember to take breaks and maintain good posture while typing.",
+    "Typing is an essential skill in the modern digital world.",
+    "Different keyboard layouts can affect typing speed and accuracy.",
+    "Touch typing involves typing without looking at the keyboard.",
+    "Typing competitions can be a fun way to challenge yourself.",
+    "Regular practice can help you type faster and more accurately.",
+    "The journey to becoming a fast typist requires patience and dedication.",
+]
+
+BACKGROUND = "#ffffff"
+FONT = ("Arial", 30, "bold")
+RESULT_FONT = ("Arial", 16, "bold")
+TEXT_FONT = ("Arial", 16)
+BUTTON_FONT = ("Arial", 12)
+
+word_count = 0
+text = ""
+time_left = 60
+start_time = time.time()
 
 
-class WatermarkApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Watermark Application")
-
-        self.canvas = Canvas(root, width=600, height=400, bg='gray')
-        # self.canvas.grid(column=1, row=0)
-        self.canvas.pack()
-
-        self.upload_button = Button(root, text="Upload Image", command=self.upload_image)
-        # self.upload_button.grid(column=1, row=1)
-        self.upload_button.pack()
-
-        self.water_mark_label = Label(root, text="Water mark text: ")
-        # self.water_mark_label.grid(column=1, row=2)
-        self.water_mark_label.pack()
-
-        self.entry = Entry(root)
-        # self.entry.grid(column=1, row=3)
-        self.entry.pack()
-
-        self.apply_watermark = Button(root, text="Apply watermark", command=self.apply_watermark)
-        # self.apply_watermark.grid(column=1, row=4)
-        self.apply_watermark.pack()
-
-        self.save_button = Button(root, text="Save Image", command=self.save_button)
-        # self.save_button.grid(column=1, row=5)
-        self.save_button.pack()
-
-        self.image = None
-        self.image_path = ""
-
-    def upload_image(self):
-        self.image_path = filedialog.askopenfilename()
-        if self.image_path:
-            self.image = Image.open(self.image_path)
-            self.display_image(self.image)
-
-    def display_image(self, image):
-        img = image.resize((600, 400), Image.LANCZOS)
-        self.tk_img = ImageTk.PhotoImage(img)
-        self.canvas.create_image(0, 0, anchor=NW, image=self.tk_img)
-
-    def apply_watermark(self):
-        if self.image:
-            watermark_text = self.entry.get()
-            if watermark_text:
-                watermark_image = self.image.copy()
-                draw = ImageDraw.Draw(watermark_image)
-
-                font = ImageFont.truetype("arial.ttf", 40)
-
-                # Get the size of the text
-                width, height = watermark_image.size
-
-                bbox = draw.textbbox((0, 0), text=watermark_text, font=font)
-                text_width, text_height = bbox[2] - bbox[0], bbox[3] - bbox[1]
-
-                # Calculate the position of the text
-                x = width - text_width - 10
-                y = height - text_height - 10
-
-                # Draw the text
-                draw.text((x, y), watermark_text, font=font, fill=(255, 255, 255, 128))
-                self.display_image(watermark_image)
-                self.watermarked_image = watermark_image
-
-            else:
-                messagebox.showerror("Error", "Please write watermark text.")
-        else:
-            messagebox.showerror("Error","Please upload the Image first.")
+# ------------------------------------------- Program --------------------------------------------
+def random_sentence():
+    global text
+    text = random.choice(sentences).strip()
+    return text
 
 
 
-    def save_button(self):
-        if hasattr(self, 'watermarked_image'):
-            save_file_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png"),
-                                                                                              ("All files", "*.*")])
-            if save_file_path:
-                self.watermarked_image.save(save_file_path)
-                messagebox.showinfo("Success", "Image saved successfully")
-
-        else:
-            messagebox.showerror("Error", "Please apply a watermark first.")
+def start(event=None):
+    global word_count
+    entered_sentence = entry_text.get().strip()
+    print(f"Entered Sentence: '{entered_sentence}'")
 
 
-if __name__ == "__main__":
-    root = Tk()
-    app = WatermarkApp(root)
-    root.mainloop()
+    if text == entered_sentence:
+        word_count += len(entered_sentence.split())
+        result_text.config(text=f"Word Count: {word_count}", fg="green")
+        entry_text.delete(0, "end")
+        random_sentence()
+        random_text.config(text=text)
+        wpn()
+
+    else:
+        print("No match")
+        result_text.config(text="No match", fg="red")
+
+def restart():
+    global word_count, time_left
+    restart_button.config(state="disabled", bg="#95a5a6")
+    entry_text.config(state="normal")
+    entry_text.focus()
+    word_count = 0
+    time_left = 60
+
+    entry_text.delete(0, "end")
+    random_text.config(text=text)
+    result_text.config(text="Result shows here!", fg="black")
+    update_timer()
+
+
+def update_timer():
+    global time_left, word_count
+    if time_left > 0:
+        time_left -= 1
+        timer_count.config(text=f"00:{time_left:02d}")
+        windows.after(1000, update_timer)
+
+    else:
+        entry_text.config(state="disabled")
+        restart_button.config(state="normal", bg="#3498db")
+
+def wpn():
+    elapsed_time = (time.time() - start_time) / 60  # Calculate elapsed time in minutes
+    wpm = word_count / elapsed_time if elapsed_time > 0 else 0  # Calculate WPM
+    result_text.config(text=f"You typed {wpm:.2f} words per minute.", fg="blue")
+
+
+
+random_sentence()
+
+# ------------------------------------------- UI --------------------------------------------
+
+windows = Tk()
+windows.title("Typing Speed Test")
+windows.config(padx=100, pady=50, bg=BACKGROUND)
+
+title = Label(text="Typing speed test", font=FONT, background=BACKGROUND)
+title.config(pady=20)
+title.grid(column=1, row=0)
+
+canvas = Canvas(width=800, height=400)
+canvas.grid(column=1, row=1)
+
+random_text = Label(text=f"{text}", font=TEXT_FONT, wraplength=600)
+canvas.create_window(400, 60, window=random_text)
+
+timer_count = Label(text="01:00", font=TEXT_FONT)
+canvas.create_window(760, 20, window=timer_count)
+
+
+entry_text = Entry(width=60, state="disabled")
+canvas.create_window(380, 160, window=entry_text)
+entry_text.bind("<Return>", start)
+
+restart_button = Button(width=8, height=2, text="Start", font=BUTTON_FONT, background="#3498db", borderwidth=0,
+                        command=restart)
+canvas.create_window(680, 160, window=restart_button)
+
+result_text = Label(text="Result shows here!", font=RESULT_FONT)
+canvas.create_window(400, 300, window=result_text)
+
+
+print(text)
+print(word_count)
+
+windows.mainloop()
