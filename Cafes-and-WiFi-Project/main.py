@@ -14,7 +14,7 @@ from flask import abort
 from flask_login import current_user
 
 
-
+# save "cafes.db" in the instance folder
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = 'YOUR KEY HERE'
